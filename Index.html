@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMotify - TBSM</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com/1603e87629.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  
+    <nav>
+        <ul>
+            <li class="brand">
+                <img src="Logo/Logo.png" alt="SM"> SMotify
+            </li>
+
+            <li class="user-profile">
+                <img src="Logo/Profile.jpg" alt="Profile">
+            </li>
+        </ul>
+    </nav>
+
+    <div class="logo-bar">
+        <div class="logo-section left">
+            <img src="Logo/Logo3.jpg" alt="SMX">
+        </div>
+
+        <div class="logo-section center">
+            <img src="Logo/Logo2.jpg" alt="Dragons">
+        </div>
+
+        <div class="logo-section right">
+            <img src="Logo/Logo.png" alt="Seedhe Maut">
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div class="main-player-view">
+            <div class="current-cover">
+                <img src="Logo/SM Potrait.jpg" id="currentCoverImg" alt="Vibe">
+            </div>
+            <div class="current-info">
+                <h1 id="bigSongName">Welcome to SMotify</h1>
+                <p id="bigArtistName">Seedhe Maut</p>
+            </div>
+        </div>
+
+        <div class="songList">
+            <h2>TBSM Discography</h2>
+            <div class="songItemContainer">
+                </div>
+        </div>
+    </div>
+
+    <div class="bottom">
+        <input type="range" name="range" id="myProgressBar" min="0" value="0" max="100">
+        
+        <div class="controls-wrapper">
+            <span id="currentTime">0:00</span>
+
+            <div class="icons">
+                <i class="fas fa-random" id="shuffleBtn" title="Shuffle"></i>
+                <i class="fas fa-2x fa-step-backward" id="previous"></i>
+                <i class="far fa-3x fa-play-circle" id="masterPlay"></i>
+                <i class="fas fa-2x fa-step-forward" id="next"></i> 
+                <i class="fas fa-redo" id="repeatBtn" title="Repeat"></i>
+            </div>
+
+            <div class="volume-container">
+                <i class="fas fa-volume-up"></i>
+                <input type="range" id="volumeControl" min="0" max="100" value="100">
+            </div>
+        </div>
+
+        <div class="songInfo">
+            <img src="playing.gif" width="42px" alt="" id="gif"> 
+            <span id="masterSongName">Select a song to play</span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

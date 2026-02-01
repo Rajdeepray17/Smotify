@@ -1,0 +1,284 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&family=Varela+Round&display=swap');
+
+:root {
+    --primary-color: #e60000; /* SM Red */
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #ffffff;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    font-family: 'Ubuntu', sans-serif;
+    overflow-x: hidden;
+}
+
+/* --- UPDATED NAV BAR --- */
+nav ul {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Pushes content to edges */
+    list-style-type: none;
+    height: 75px; /* Slightly taller for bigger logo */
+    background-color: black;
+    color: white;
+    border-bottom: 2px solid var(--primary-color);
+    padding: 0 30px; /* Padding on sides */
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    font-weight: bolder;
+    font-size: 1.8rem; /* Made Bigger */
+}
+
+.brand img {
+    width: 55px; /* Made Bigger */
+    padding-right: 15px;
+}
+
+.user-profile img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-color);
+    display: block;
+    cursor: pointer;
+}
+/* ----------------------- */
+
+/* Logo Bar Sections */
+.logo-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 5%;
+    background: #000;
+    height: 180px;
+}
+
+.logo-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background: #111;
+    border: 1px solid #333;
+}
+
+.logo-section img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.logo-section.left, .logo-section.right {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+}
+
+.logo-section.center {
+    width: 400px;
+    height: 140px;
+    border-radius: 15px;
+}
+
+/* Main Container */
+.container {
+    min-height: 65vh;
+    background-color: black;
+    display: flex;
+    margin: 20px auto;
+    width: 85%;
+    border-radius: 12px;
+    padding: 20px;
+    gap: 30px;
+    background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,1)), url('bg.jpg'); 
+    background-size: cover;
+    margin-bottom: 140px; 
+}
+
+/* Big Player View */
+.main-player-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.current-cover img {
+    width: 100%;
+    max-width: 350px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(230, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.current-info h1 {
+    margin-top: 20px;
+    font-size: 2.5rem;
+    color: var(--primary-color);
+}
+
+/* Song List */
+.songList {
+    flex: 1;
+    height: 550px;
+    overflow-y: auto; 
+    padding-right: 10px;
+}
+
+.songList::-webkit-scrollbar {
+    width: 8px;
+}
+.songList::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+.songItem {
+    height: 60px;
+    display: flex;
+    background-color: var(--card-bg);
+    color: white;
+    margin: 10px 0;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 50px;
+    padding: 0 20px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.songItem:hover {
+    background-color: #333;
+    border-left: 5px solid var(--primary-color);
+}
+
+.songItem img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+}
+
+.songItem .content {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+.songlistplay i {
+    cursor: pointer;
+    color: var(--primary-color);
+}
+
+/* Bottom Player */
+.bottom {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 120px;
+    background-color: #000;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px solid #333;
+    z-index: 100;
+}
+
+#myProgressBar {
+    width: 95%;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.controls-wrapper {
+    display: flex;
+    width: 90%;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.icons {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.icons i {
+    cursor: pointer;
+    transition: 0.2s;
+    color: #fff; /* Default color */
+}
+
+.icons i:hover {
+    color: var(--primary-color);
+}
+
+.icons i.active {
+    color: var(--primary-color);
+    text-shadow: 0 0 5px var(--primary-color);
+}
+
+.songInfo {
+    position: absolute;
+    left: 20px;
+    bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.songInfo img {
+    opacity: 0;
+    transition: opacity 0.4s ease-in;
+}
+
+.volume-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#volumeControl {
+    width: 80px;
+    accent-color: var(--primary-color);
+}
+
+@media screen and (max-width: 900px) {
+    .container {
+        flex-direction: column;
+        width: 95%;
+    }
+    .main-player-view {
+        display: none; 
+    }
+    .logo-bar {
+        height: auto;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .logo-section.center {
+        width: 100%;
+        height: 100px;
+    }
+    .volume-container, #currentTime, .songInfo {
+        display: none; 
+    }
+}
