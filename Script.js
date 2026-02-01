@@ -12,9 +12,11 @@ let bigArtistName = document.getElementById('bigArtistName');
 let currentCoverImg = document.getElementById('currentCoverImg');
 let songItemContainer = document.querySelector('.songItemContainer');
 let volumeControl = document.getElementById('volumeControl');
-let currentTimeDisplay = document.getElementById('currentTime');
+let timeDisplay = document.getElementById('timeDisplay');
 let shuffleBtn = document.getElementById('shuffleBtn');
 let repeatBtn = document.getElementById('repeatBtn');
+let searchInput = document.getElementById('searchInput');
+let equalizer = document.getElementById('equalizer');
 
 // Animation Element Target
 let desktopMiddleLogo = document.getElementById('desktopMiddleLogo');
@@ -22,7 +24,24 @@ let desktopMiddleLogo = document.getElementById('desktopMiddleLogo');
 // State Variables
 let isShuffle = false;
 let isRepeat = false;
-let hasPlayedOnce = false; 
+let hasPlayedOnce = false;
+let isMuted = false;
+let previousVolume = 100;
+
+// Toast Notification Function
+function showToast(message, icon = '') {
+    const toastContainer = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.classList.add('toast');
+    toast.innerHTML = `${icon ? `<i class="${icon}"></i>` : ''} ${message}`;
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 2000);
+} 
 
 const songListRaw = [
     "Nanchaku", "Nalla Freestyle", "Asal G", "11K", "Naksha", "Namastute", 
@@ -30,11 +49,11 @@ const songListRaw = [
     "Shaktiman", "Kranti", "Champions", "Naam kaam sheher", "Natkhat", 
     "Khush nahi", "Gourmet Shit", "Seedhe Maut Anthem", "Red", 
     "Shakti aur Kshama", "Maar kaat", "Pickup", "Madira", "Pancake", 
-    "Batti", "Maina", "Takat", "Meri Baggi", "Hola Amigo", "Khata Flow", 
-    "Shutdown", "TT", "Luka Chippi", "MMM", "Hausla", "Nayab", 
+    "Batti", "Maina", "Taakat", "Meri Baggi", "Hola Amigo", "Khata Flow", 
+    "Shutdown", "TT", "Luka Chippi", "MMM", "Hausla", "Nayaab", 
     "Class-sikh Maut Vol 2", "Teen Dost", "Sike", "Capital Rap", "Kohra", 
     "Uss din", "Toh kya", "Gandi Aulad", "Swah", "Sensitive", "Rahat", 
-    "Do guna", "Chidiya Udd", "Anadi", "Choti Soch", "Kodak", "Bure Din", 
+    "Do guna", "Chidiya Udd", "Anaadi", "Choti Soch", "Kodak", "Bure Din", 
     "Kya challa", "Fanne khan", "First place", "Akatsuki", "Kaanch ke ghar", 
     "Bhundfaad"
 ];
@@ -72,9 +91,11 @@ function toggleAnimations(isPlaying) {
     if (isPlaying) {
         currentCoverImg.classList.add('beating');
         if(desktopMiddleLogo) desktopMiddleLogo.classList.add('logo-beating');
+        if(equalizer) equalizer.classList.add('active');
     } else {
         currentCoverImg.classList.remove('beating');
         if(desktopMiddleLogo) desktopMiddleLogo.classList.remove('logo-beating');
+        if(equalizer) equalizer.classList.remove('active');
     }
 }
 
@@ -111,6 +132,7 @@ masterPlay.addEventListener('click', ()=>{
         masterPlay.classList.add('fa-pause-circle');
         gif.style.opacity = 1;
         toggleAnimations(true); // START ANIMATION
+        showToast('Playing', 'fas fa-play');
         
         let playingIcon = document.getElementById(songIndex);
         if(playingIcon) {
@@ -125,6 +147,7 @@ masterPlay.addEventListener('click', ()=>{
         gif.style.opacity = 0;
         makeAllPlays(); 
         toggleAnimations(false); // STOP ANIMATION
+        showToast('Paused', 'fas fa-pause');
     }
 })
 
@@ -132,12 +155,14 @@ masterPlay.addEventListener('click', ()=>{
 shuffleBtn.addEventListener('click', () => {
     isShuffle = !isShuffle;
     shuffleBtn.classList.toggle('active');
+    showToast(isShuffle ? 'Shuffle ON' : 'Shuffle OFF', 'fas fa-random');
 });
 
 // Repeat Toggle
 repeatBtn.addEventListener('click', () => {
     isRepeat = !isRepeat;
     repeatBtn.classList.toggle('active');
+    showToast(isRepeat ? 'Repeat ON' : 'Repeat OFF', 'fas fa-redo');
 });
 
 // Next Button
@@ -194,12 +219,19 @@ audioElement.addEventListener('timeupdate', ()=>{
     let progress = parseInt((audioElement.currentTime/audioElement.duration)* 100); 
     myProgressBar.value = progress;
 
-    let mins = Math.floor(audioElement.currentTime / 60);
-    let secs = Math.floor(audioElement.currentTime % 60);
-    if (secs < 10) secs = "0" + secs;
-    if (isNaN(mins)) mins = "0";
-    if (isNaN(secs)) secs = "00";
-    currentTimeDisplay.innerText = `${mins}:${secs}`;
+    let currentMins = Math.floor(audioElement.currentTime / 60);
+    let currentSecs = Math.floor(audioElement.currentTime % 60);
+    let totalMins = Math.floor(audioElement.duration / 60);
+    let totalSecs = Math.floor(audioElement.duration % 60);
+    
+    if (currentSecs < 10) currentSecs = "0" + currentSecs;
+    if (totalSecs < 10) totalSecs = "0" + totalSecs;
+    if (isNaN(currentMins)) currentMins = "0";
+    if (isNaN(currentSecs)) currentSecs = "00";
+    if (isNaN(totalMins)) totalMins = "0";
+    if (isNaN(totalSecs)) totalSecs = "00";
+    
+    timeDisplay.innerText = `${currentMins}:${currentSecs} / ${totalMins}:${totalSecs}`;
 })
 
 myProgressBar.addEventListener('change', ()=>{
@@ -245,5 +277,104 @@ Array.from(document.getElementsByClassName('songlistplay')).forEach((element)=>{
         e.target.classList.add('fa-pause-circle');
         masterPlay.classList.remove('fa-play-circle');
         masterPlay.classList.add('fa-pause-circle');
+    });
+});
+
+// Keyboard Controls
+document.addEventListener('keydown', (e) => {
+    // Spacebar for Play/Pause
+    if (e.code === 'Space') {
+        e.preventDefault(); // Prevent page scroll
+        masterPlay.click();
+    }
+    
+    // Right Arrow for Forward 5 seconds
+    if (e.code === 'ArrowRight') {
+        e.preventDefault();
+        audioElement.currentTime = Math.min(audioElement.currentTime + 5, audioElement.duration);
+        showToast('Forward 5s', 'fas fa-forward');
+    }
+    
+    // Left Arrow for Backward 5 seconds
+    if (e.code === 'ArrowLeft') {
+        e.preventDefault();
+        audioElement.currentTime = Math.max(audioElement.currentTime - 5, 0);
+        showToast('Backward 5s', 'fas fa-backward');
+    }
+    
+    // Arrow Up for Volume Up
+    if (e.code === 'ArrowUp') {
+        e.preventDefault();
+        let newVolume = Math.min(parseInt(volumeControl.value) + 10, 100);
+        volumeControl.value = newVolume;
+        audioElement.volume = newVolume / 100;
+        showToast(`Volume: ${newVolume}%`, 'fas fa-volume-up');
+    }
+    
+    // Arrow Down for Volume Down
+    if (e.code === 'ArrowDown') {
+        e.preventDefault();
+        let newVolume = Math.max(parseInt(volumeControl.value) - 10, 0);
+        volumeControl.value = newVolume;
+        audioElement.volume = newVolume / 100;
+        showToast(`Volume: ${newVolume}%`, 'fas fa-volume-down');
+    }
+    
+    // M for Mute/Unmute
+    if (e.code === 'KeyM') {
+        e.preventDefault();
+        if (!isMuted) {
+            previousVolume = volumeControl.value;
+            volumeControl.value = 0;
+            audioElement.volume = 0;
+            isMuted = true;
+            showToast('Muted', 'fas fa-volume-mute');
+        } else {
+            volumeControl.value = previousVolume;
+            audioElement.volume = previousVolume / 100;
+            isMuted = false;
+            showToast('Unmuted', 'fas fa-volume-up');
+        }
+    }
+    
+    // N for Next
+    if (e.code === 'KeyN') {
+        e.preventDefault();
+        document.getElementById('next').click();
+        showToast('Next Song', 'fas fa-step-forward');
+    }
+    
+    // P for Previous
+    if (e.code === 'KeyP') {
+        e.preventDefault();
+        document.getElementById('previous').click();
+        showToast('Previous Song', 'fas fa-step-backward');
+    }
+    
+    // S for Shuffle
+    if (e.code === 'KeyS') {
+        e.preventDefault();
+        shuffleBtn.click();
+    }
+    
+    // R for Repeat
+    if (e.code === 'KeyR') {
+        e.preventDefault();
+        repeatBtn.click();
+    }
+});
+
+// Search Functionality
+searchInput.addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const songItems = document.querySelectorAll('.songItem');
+    
+    songItems.forEach(item => {
+        const songName = item.querySelector('.SongName').textContent.toLowerCase();
+        if (songName.includes(searchTerm)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
     });
 });
