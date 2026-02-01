@@ -16,10 +16,13 @@ let currentTimeDisplay = document.getElementById('currentTime');
 let shuffleBtn = document.getElementById('shuffleBtn');
 let repeatBtn = document.getElementById('repeatBtn');
 
+// Animation Element Target
+let desktopMiddleLogo = document.getElementById('desktopMiddleLogo');
+
 // State Variables
 let isShuffle = false;
 let isRepeat = false;
-let hasPlayedOnce = false; // To track if we are in "Static Portrait" mode
+let hasPlayedOnce = false; 
 
 const songListRaw = [
     "Nanchaku", "Nalla Freestyle", "Asal G", "11K", "Naksha", "Namastute", 
@@ -62,24 +65,31 @@ songs.forEach((song, i) => {
     songItemContainer.appendChild(div);
 });
 
-// Setup Initial Audio (Don't update Big Display yet)
 audioElement.src = songs[0].filePath;
+
+// --- Helper: Handle Animation Classes ---
+function toggleAnimations(isPlaying) {
+    if (isPlaying) {
+        currentCoverImg.classList.add('beating');
+        if(desktopMiddleLogo) desktopMiddleLogo.classList.add('logo-beating');
+    } else {
+        currentCoverImg.classList.remove('beating');
+        if(desktopMiddleLogo) desktopMiddleLogo.classList.remove('logo-beating');
+    }
+}
 
 function loadSong(index) {
     songIndex = index;
     audioElement.src = songs[songIndex].filePath;
     
-    // Update Bottom Player (Always)
     masterSongName.innerText = songs[songIndex].songName;
     
-    // Update Big Player (Only if we have started playing)
     if (hasPlayedOnce) {
         bigSongName.innerText = songs[songIndex].songName;
         bigArtistName.innerText = songs[songIndex].artist;
         currentCoverImg.src = songs[songIndex].coverPath;
     }
 
-    // Reset Icons
     makeAllPlays();
     let playingIcon = document.getElementById(index);
     if(playingIcon) {
@@ -91,16 +101,16 @@ function loadSong(index) {
 // Play/Pause Click
 masterPlay.addEventListener('click', ()=>{
     if(audioElement.paused || audioElement.currentTime <= 0){
-        // First play interaction: Switch from Static Portrait to Song Cover
         if (!hasPlayedOnce) {
             hasPlayedOnce = true;
-            loadSong(songIndex); // Refresh UI to show cover
+            loadSong(songIndex); 
         }
         
         audioElement.play();
         masterPlay.classList.remove('fa-play-circle');
         masterPlay.classList.add('fa-pause-circle');
         gif.style.opacity = 1;
+        toggleAnimations(true); // START ANIMATION
         
         let playingIcon = document.getElementById(songIndex);
         if(playingIcon) {
@@ -114,6 +124,7 @@ masterPlay.addEventListener('click', ()=>{
         masterPlay.classList.add('fa-play-circle');
         gif.style.opacity = 0;
         makeAllPlays(); 
+        toggleAnimations(false); // STOP ANIMATION
     }
 })
 
@@ -129,7 +140,7 @@ repeatBtn.addEventListener('click', () => {
     repeatBtn.classList.toggle('active');
 });
 
-// Next Button Logic (Includes Shuffle)
+// Next Button
 document.getElementById('next').addEventListener('click', () => {
     if (isShuffle) {
         songIndex = Math.floor(Math.random() * songs.length);
@@ -141,9 +152,10 @@ document.getElementById('next').addEventListener('click', () => {
         }
     }
     
-    hasPlayedOnce = true; // Ensure UI updates
+    hasPlayedOnce = true; 
     loadSong(songIndex);
     audioElement.play();
+    toggleAnimations(true); // Ensure animation starts
     masterPlay.classList.remove('fa-play-circle');
     masterPlay.classList.add('fa-pause-circle');
     gif.style.opacity = 1;
@@ -160,19 +172,19 @@ document.getElementById('previous').addEventListener('click', ()=>{
     hasPlayedOnce = true;
     loadSong(songIndex);
     audioElement.play();
+    toggleAnimations(true);
     masterPlay.classList.remove('fa-play-circle');
     masterPlay.classList.add('fa-pause-circle');
     gif.style.opacity = 1;
 });
 
-// Auto Play Next (Handle Repeat & Shuffle)
+// Auto Play Next
 audioElement.addEventListener('ended', () => {
     if (isRepeat) {
-        // Just play again
         audioElement.currentTime = 0;
         audioElement.play();
+        toggleAnimations(true);
     } else {
-        // Trigger Next Click
         document.getElementById('next').click();
     }
 });
@@ -219,13 +231,15 @@ Array.from(document.getElementsByClassName('songlistplay')).forEach((element)=>{
              masterPlay.classList.remove('fa-pause-circle');
              masterPlay.classList.add('fa-play-circle');
              gif.style.opacity = 0;
+             toggleAnimations(false); // PAUSE ANIMATION
              return;
         }
 
-        hasPlayedOnce = true; // User clicked a song, switch UI
+        hasPlayedOnce = true;
         loadSong(index);
         audioElement.play();
         gif.style.opacity = 1;
+        toggleAnimations(true); // START ANIMATION
         
         e.target.classList.remove('fa-play-circle');
         e.target.classList.add('fa-pause-circle');
