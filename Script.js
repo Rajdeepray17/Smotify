@@ -27,6 +27,8 @@ let isRepeat = false;
 let hasPlayedOnce = false;
 let isMuted = false;
 let previousVolume = 100;
+let isTTCoverSwitched = false;
+const TT_SWITCH_TIME = 3 * 60 + 56;
 
 // Toast Notification Function
 function showToast(message, icon = '') {
@@ -102,6 +104,7 @@ function toggleAnimations(isPlaying) {
 function loadSong(index) {
     songIndex = index;
     audioElement.src = songs[songIndex].filePath;
+    isTTCoverSwitched = false;
     
     masterSongName.innerText = songs[songIndex].songName;
     
@@ -119,6 +122,14 @@ function loadSong(index) {
     }
 }
 
+function getEffectiveCoverPath() {
+    if (songs[songIndex].songName === 'TT' && isTTCoverSwitched) {
+        return 'covers/Shutdown.jpg';
+    }
+
+    return songs[songIndex].coverPath;
+}
+
 // Update Media Session (for browser notifications)
 function updateMediaSession() {
     if ('mediaSession' in navigator) {
@@ -128,12 +139,12 @@ function updateMediaSession() {
             album: 'TBSM',
             artwork: [
                 {
-                    src: songs[songIndex].coverPath,
+                    src: getEffectiveCoverPath(),
                     sizes: '256x256',
                     type: 'image/jpeg'
                 },
                 {
-                    src: songs[songIndex].coverPath,
+                    src: getEffectiveCoverPath(),
                     sizes: '512x512',
                     type: 'image/jpeg'
                 }
@@ -279,6 +290,18 @@ audioElement.addEventListener('timeupdate', ()=>{
     if (isNaN(totalSecs)) totalSecs = "00";
     
     timeDisplay.innerText = `${currentMins}:${currentSecs} / ${totalMins}:${totalSecs}`;
+
+    if (songs[songIndex].songName === 'TT') {
+        if (!isTTCoverSwitched && audioElement.currentTime >= TT_SWITCH_TIME) {
+            isTTCoverSwitched = true;
+            currentCoverImg.src = 'covers/Shutdown.jpg';
+            updateMediaSession();
+        } else if (isTTCoverSwitched && audioElement.currentTime < TT_SWITCH_TIME) {
+            isTTCoverSwitched = false;
+            currentCoverImg.src = songs[songIndex].coverPath;
+            updateMediaSession();
+        }
+    }
     
     // Sync progress bar with Media Session API (notification)
     if ('mediaSession' in navigator && !isNaN(audioElement.duration)) {
