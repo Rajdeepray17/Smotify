@@ -2,9 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1DB954">
+    <meta name="description" content="Stream Seedhe Maut songs - Your personal music player">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SMotify">
+    <meta name="apple-mobile-web-app-icon" href="Logo/Logo.png">
     <title>SMotify - TBSM</title>
     <link rel="icon" type="image/png" href="Logo/Logo.png">
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
     <script src="https://kit.fontawesome.com/1603e87629.js" crossorigin="anonymous"></script>
 </head>
@@ -95,5 +102,27 @@
 
     <div id="toast-container"></div>
     <script src="script.js"></script>
+    
+    <!-- Register Service Worker for PWA -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(registration => {
+                    console.log('Service Worker registered:', registration);
+                })
+                .catch(error => {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+        
+        // Handle install prompt for "Add to Home Screen"
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // You can show an "Install App" button if you want
+            console.log('PWA can be installed');
+        });
+    </script>
 </body>
 </html>

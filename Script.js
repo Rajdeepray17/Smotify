@@ -119,6 +119,50 @@ function loadSong(index) {
     }
 }
 
+// Update Media Session (for browser notifications)
+function updateMediaSession() {
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: songs[songIndex].songName,
+            artist: songs[songIndex].artist,
+            album: 'TBSM',
+            artwork: [
+                {
+                    src: songs[songIndex].coverPath,
+                    sizes: '256x256',
+                    type: 'image/jpeg'
+                },
+                {
+                    src: songs[songIndex].coverPath,
+                    sizes: '512x512',
+                    type: 'image/jpeg'
+                }
+            ]
+        });
+
+        // Set up media session action handlers
+        navigator.mediaSession.setActionHandler('play', () => {
+            audioElement.play();
+            masterPlay.classList.remove('fa-play-circle');
+            masterPlay.classList.add('fa-pause-circle');
+        });
+
+        navigator.mediaSession.setActionHandler('pause', () => {
+            audioElement.pause();
+            masterPlay.classList.remove('fa-pause-circle');
+            masterPlay.classList.add('fa-play-circle');
+        });
+
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+            document.getElementById('next').click();
+        });
+
+        navigator.mediaSession.setActionHandler('previoustrack', () => {
+            document.getElementById('previous').click();
+        });
+    }
+}
+
 // Play/Pause Click
 masterPlay.addEventListener('click', ()=>{
     if(audioElement.paused || audioElement.currentTime <= 0){
@@ -133,6 +177,7 @@ masterPlay.addEventListener('click', ()=>{
         gif.style.opacity = 1;
         toggleAnimations(true); // START ANIMATION
         showToast('Playing', 'fas fa-play');
+        updateMediaSession(); // Update notification with song info
         
         let playingIcon = document.getElementById(songIndex);
         if(playingIcon) {
@@ -184,6 +229,7 @@ document.getElementById('next').addEventListener('click', () => {
     masterPlay.classList.remove('fa-play-circle');
     masterPlay.classList.add('fa-pause-circle');
     gif.style.opacity = 1;
+    updateMediaSession(); // Update notification with next song info
 });
 
 // Previous Button
@@ -201,6 +247,7 @@ document.getElementById('previous').addEventListener('click', ()=>{
     masterPlay.classList.remove('fa-play-circle');
     masterPlay.classList.add('fa-pause-circle');
     gif.style.opacity = 1;
+    updateMediaSession(); // Update notification with previous song info
 });
 
 // Auto Play Next
@@ -232,10 +279,28 @@ audioElement.addEventListener('timeupdate', ()=>{
     if (isNaN(totalSecs)) totalSecs = "00";
     
     timeDisplay.innerText = `${currentMins}:${currentSecs} / ${totalMins}:${totalSecs}`;
+    
+    // Sync progress bar with Media Session API (notification)
+    if ('mediaSession' in navigator && !isNaN(audioElement.duration)) {
+        navigator.mediaSession.setPositionState({
+            duration: audioElement.duration,
+            playbackRate: audioElement.playbackRate,
+            position: audioElement.currentTime
+        });
+    }
 })
 
 myProgressBar.addEventListener('change', ()=>{
     audioElement.currentTime = myProgressBar.value * audioElement.duration/100;
+    
+    // Immediately update Media Session position when user scrubs
+    if ('mediaSession' in navigator && !isNaN(audioElement.duration)) {
+        navigator.mediaSession.setPositionState({
+            duration: audioElement.duration,
+            playbackRate: audioElement.playbackRate,
+            position: audioElement.currentTime
+        });
+    }
 });
 
 volumeControl.addEventListener('change', (e) => {
@@ -271,6 +336,7 @@ Array.from(document.getElementsByClassName('songlistplay')).forEach((element)=>{
         loadSong(index);
         audioElement.play();
         gif.style.opacity = 1;
+        updateMediaSession(); // Update notification with selected song info
         toggleAnimations(true); // START ANIMATION
         
         e.target.classList.remove('fa-play-circle');
