@@ -64,8 +64,8 @@ let songs = songListRaw.map((name) => {
     return {
         songName: name,
         artist: "Seedhe Maut",
-        filePath: `songs/${name}.mp3`, 
-        coverPath: `covers/${name}.jpg`
+        filePath: `Songs/${name}.mp3`, 
+        coverPath: `Covers/${name}.jpg`
     }
 });
 
@@ -124,27 +124,44 @@ function loadSong(index) {
 
 function getEffectiveCoverPath() {
     if (songs[songIndex].songName === 'TT' && isTTCoverSwitched) {
-        return 'covers/Shutdown.jpg';
+        return 'Covers/Shutdown.jpg';
     }
 
     return songs[songIndex].coverPath;
 }
 
+function getAbsoluteUrl(path) {
+    try {
+        return new URL(path, window.location.href).href;
+    } catch (error) {
+        return path;
+    }
+}
+
+function setMediaActionHandler(action, handler) {
+    try {
+        navigator.mediaSession.setActionHandler(action, handler);
+    } catch (error) {
+        // Action not supported in this browser
+    }
+}
+
 // Update Media Session (for browser notifications)
 function updateMediaSession() {
-    if ('mediaSession' in navigator) {
+    if ('mediaSession' in navigator && 'MediaMetadata' in window) {
+        const artworkUrl = getAbsoluteUrl(getEffectiveCoverPath());
         navigator.mediaSession.metadata = new MediaMetadata({
             title: songs[songIndex].songName,
             artist: songs[songIndex].artist,
             album: 'TBSM',
             artwork: [
                 {
-                    src: getEffectiveCoverPath(),
+                    src: artworkUrl,
                     sizes: '256x256',
                     type: 'image/jpeg'
                 },
                 {
-                    src: getEffectiveCoverPath(),
+                    src: artworkUrl,
                     sizes: '512x512',
                     type: 'image/jpeg'
                 }
@@ -152,27 +169,58 @@ function updateMediaSession() {
         });
 
         // Set up media session action handlers
-        navigator.mediaSession.setActionHandler('play', () => {
+        setMediaActionHandler('play', () => {
             audioElement.play();
             masterPlay.classList.remove('fa-play-circle');
             masterPlay.classList.add('fa-pause-circle');
         });
 
-        navigator.mediaSession.setActionHandler('pause', () => {
+        setMediaActionHandler('pause', () => {
             audioElement.pause();
             masterPlay.classList.remove('fa-pause-circle');
             masterPlay.classList.add('fa-play-circle');
         });
 
-        navigator.mediaSession.setActionHandler('nexttrack', () => {
+        setMediaActionHandler('nexttrack', () => {
             document.getElementById('next').click();
         });
 
-        navigator.mediaSession.setActionHandler('previoustrack', () => {
+        setMediaActionHandler('previoustrack', () => {
             document.getElementById('previous').click();
+        });
+
+        setMediaActionHandler('seekto', (details) => {
+            if (details && typeof details.seekTime === 'number') {
+                audioElement.currentTime = details.seekTime;
+            }
         });
     }
 }
+
+audioElement.addEventListener('play', () => {
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'playing';
+        updateMediaSession();
+    }
+});
+
+audioElement.addEventListener('pause', () => {
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+    }
+});
+
+audioElement.addEventListener('loadedmetadata', () => {
+    updateMediaSession();
+
+    if ('mediaSession' in navigator && !isNaN(audioElement.duration)) {
+        navigator.mediaSession.setPositionState({
+            duration: audioElement.duration,
+            playbackRate: audioElement.playbackRate,
+            position: audioElement.currentTime
+        });
+    }
+});
 
 // Play/Pause Click
 masterPlay.addEventListener('click', ()=>{
