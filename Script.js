@@ -17,6 +17,12 @@ let shuffleBtn = document.getElementById('shuffleBtn');
 let repeatBtn = document.getElementById('repeatBtn');
 let searchInput = document.getElementById('searchInput');
 let equalizer = document.getElementById('equalizer');
+let lyricsBtn = document.getElementById('lyricsBtn');
+let lyricsModal = document.getElementById('lyricsModal');
+let closeLyricsBtn = document.getElementById('closeLyricsBtn');
+let lyricsBody = document.getElementById('lyricsBody');
+let lyricsTitle = document.getElementById('lyricsTitle');
+let lyricsArtist = document.getElementById('lyricsArtist');
 
 // Animation Element Target
 let desktopMiddleLogo = document.getElementById('desktopMiddleLogo');
@@ -51,7 +57,7 @@ const songListRaw = [
     "Shaktiman", "Kranti", "Champions", "Naam kaam sheher", "Natkhat", 
     "Khush nahi", "Gourmet Shit", "Seedhe Maut Anthem", "Red", 
     "Shakti aur Kshama", "Maar kaat", "Pickup", "Madira", "Pancake", 
-    "Batti", "Maina", "Taakat", "Meri Baggi", "Hola Amigo", "Khata Flow", 
+    "Batti", "Maina", "Taakat", "Meri Baggi", "Hola Amigo", "Khatta Flow", 
     "Shutdown", "TT", "Luka Chippi", "MMM", "Hausla", "Nayaab", 
     "Class-sikh Maut Vol 2", "Teen Dost", "Sike", "Capital Rap", "Kohra", 
     "Uss din", "Toh kya", "Gandi Aulad", "Swah", "Sensitive", "Rahat", 
@@ -81,7 +87,10 @@ songs.forEach((song, i) => {
                 <span style="font-size: 0.8rem; color: #ccc;">${song.artist}</span>
             </div>
         </div>
-        <span class="songlistplay"><i id="${i}" class="far fa-play-circle fa-2x"></i></span>
+        <span class="songlistplay">
+            <i id="${i}" class="far fa-play-circle fa-2x"></i>
+            <img class="lyrics-icon-btn" src="Logo/Lyrics4.png" data-index="${i}" title="Lyrics" alt="Lyrics">
+        </span>
     `;
     songItemContainer.appendChild(div);
 });
@@ -498,6 +507,125 @@ document.addEventListener('keydown', (e) => {
     if (e.code === 'KeyR') {
         e.preventDefault();
         repeatBtn.click();
+    }
+});
+
+// Lyrics Functionality
+function ensureLyricsElements() {
+    if (!lyricsModal) lyricsModal = document.getElementById('lyricsModal');
+    if (!lyricsBody) lyricsBody = document.getElementById('lyricsBody');
+    if (!lyricsTitle) lyricsTitle = document.getElementById('lyricsTitle');
+    if (!lyricsArtist) lyricsArtist = document.getElementById('lyricsArtist');
+    if (!closeLyricsBtn) closeLyricsBtn = document.getElementById('closeLyricsBtn');
+
+    if (lyricsModal && lyricsBody && lyricsTitle && lyricsArtist) {
+        return true;
+    }
+
+    const modalMarkup = `
+        <div id="lyricsModal" class="lyrics-modal">
+            <div class="lyrics-content">
+                <div class="lyrics-header">
+                    <div class="lyrics-info">
+                        <h2 id="lyricsTitle">Song Title</h2>
+                        <p id="lyricsArtist">Artist Name</p>
+                    </div>
+                    <button id="closeLyricsBtn" class="close-lyrics-btn">&times;</button>
+                </div>
+                <div class="lyrics-body" id="lyricsBody">
+                    <p style="text-align: center; color: #999;">Loading lyrics...</p>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalMarkup);
+    lyricsModal = document.getElementById('lyricsModal');
+    lyricsBody = document.getElementById('lyricsBody');
+    lyricsTitle = document.getElementById('lyricsTitle');
+    lyricsArtist = document.getElementById('lyricsArtist');
+    closeLyricsBtn = document.getElementById('closeLyricsBtn');
+
+    return !!(lyricsModal && lyricsBody && lyricsTitle && lyricsArtist);
+}
+
+function loadLyrics(index = songIndex) {
+    if (!ensureLyricsElements()) {
+        showToast('Lyrics UI not found', 'fas fa-exclamation');
+        return;
+    }
+
+    if (songs[index].songName === 'Select a song to play') {
+        showToast('Select a song first', 'fas fa-exclamation');
+        return;
+    }
+
+    const lyricsPath = `Lyrics/${songs[index].songName}.txt`;
+    
+    fetch(lyricsPath)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Lyrics not found');
+            }
+            return response.text();
+        })
+        .then(lyrics => {
+            lyricsTitle.innerText = songs[index].songName;
+            lyricsArtist.innerText = songs[index].artist;
+            
+            // Format lyrics with line breaks
+            const formattedLyrics = lyrics
+                .split('\n')
+                .map(line => `<p>${line.trim()}</p>`)
+                .join('');
+            
+            lyricsBody.innerHTML = formattedLyrics || '<p style="text-align: center; color: #999;">No lyrics available</p>';
+            openLyricsModal();
+            showToast('Lyrics loaded', 'fas fa-book');
+        })
+        .catch(error => {
+            lyricsBody.innerHTML = '<p style="text-align: center; color: #ff6b6b;">Lyrics not found for this song</p>';
+            lyricsTitle.innerText = songs[index].songName;
+            lyricsArtist.innerText = songs[index].artist;
+            openLyricsModal();
+            showToast('Lyrics not available', 'fas fa-exclamation');
+        });
+}
+
+function openLyricsModal() {
+    if (!ensureLyricsElements()) return;
+    lyricsModal.classList.add('active');
+    lyricsModal.style.display = 'flex';
+}
+
+function closeLyricsModal() {
+    if (!ensureLyricsElements()) return;
+    lyricsModal.classList.remove('active');
+    lyricsModal.style.display = '';
+}
+
+// Main lyrics button in controls
+document.addEventListener('click', (e) => {
+    const lyricsControl = e.target.closest('#lyricsBtn');
+    if (lyricsControl) {
+        loadLyrics();
+        return;
+    }
+
+    const listLyrics = e.target.closest('.lyrics-icon-btn');
+    if (listLyrics) {
+        const index = parseInt(listLyrics.getAttribute('data-index'));
+        loadLyrics(index);
+        return;
+    }
+
+    if (e.target.closest('#closeLyricsBtn')) {
+        closeLyricsModal();
+        return;
+    }
+
+    if (e.target.id === 'lyricsModal') {
+        closeLyricsModal();
     }
 });
 
